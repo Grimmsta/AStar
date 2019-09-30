@@ -56,7 +56,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
 
         //States
         public bool isGameOver;
-        public bool isPause;
         public bool isFirstInput;
         public bool isMoving;
 
@@ -69,7 +68,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
         public UnityEvent onGameOver;
         public UnityEvent firstInput;
         public UnityEvent onScore;
-        public UnityEvent onPause;
 
         //Direction
         public enum Direction
@@ -83,8 +81,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
         //UI
         public Text currentScoreText;
         public Text highScoreText;
-        public Text currentScorePause;
-        public Text highScorePause;
 
         public object Scenemanager { get; private set; }
         #endregion Variables
@@ -104,12 +100,11 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
             CreateCollectible();
             targetDirection = Direction.right;
             isGameOver = false;
-            isPause = false;
             isMoving = true;
             currentScore = 0;
             UpdateScore();
 
-            //if (isAStar)
+             //if (isAStar)
             //{
             //    do
             //    {
@@ -236,27 +231,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
         #region Update
         private void Update() //Cheks for inputs or the state of the game 
         {
-            if (Input.GetKey(KeyCode.P))
-            {
-                onPause.Invoke();
-            }
-
-            if (isPause)
-            {
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    Debug.Log("You've quit the game");
-                    Application.Quit();
-                }
-
-                if (Input.GetKeyDown(KeyCode.R))
-                {
-                    isPause = false;
-                    isMoving = true;
-                    firstInput.Invoke();
-                }
-            }
-
             if (isGameOver)
             {
                 if (Input.GetKeyDown(KeyCode.R))
@@ -268,14 +242,7 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
             //GetInput();
 
             timer += Time.deltaTime; //Timer that always count up
-                                     /*if (timer > moveRate && !isAStar) //Basically makes it move with time and not based on how fast your computer is(based on FPS?)
-                                                                       //when the timer is greater than your moverate, you'll move
-                                     {
-                                         timer = 0;
-                                         currentDirection = targetDirection;
-                                         //MovePlayer();
-                                     }
-                                     else*/
+                                   
             if (timer > moveRate && isAStar)
             {
                 Vector2 playerPos = new Vector2(playerNode.worldPosition.x, playerNode.worldPosition.y);
@@ -356,8 +323,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
                         tail.Insert(0, CreateTailNode(oldPosNode.x, oldPosNode.y)); //Adds a node to your tail
                     }
 
-                    //previousNode.parent.walkable = true;
-
                     if (isScore)
                     {
                         currentScore++;
@@ -415,92 +380,6 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
                 CheckDirection(Direction.right);
             }
         }
-        void MovePlayer() //Moves the player
-        {
-            int x = 0;
-            int y = 0;
-
-            if (isMoving)
-            {
-                switch (currentDirection) //(it's cheaper for the computer to use a switch statement if I remember correctly)
-                {
-                    case Direction.up:
-                        y = 1;
-                        break;
-                    case Direction.down:
-                        y = -1;
-                        break;
-                    case Direction.left:
-                        x = -1;
-                        break;
-                    case Direction.right:
-                        x = 1;
-                        break;
-                }
-            }
-
-            Node targetNode = GetNode(playerNode.x + x, playerNode.y + y); //Get the nodes around you
-
-            if (targetNode == null) //If there isn't a node in the direction you're going (meaning you've hit a wall), you lose
-            {
-                onGameOver.Invoke();
-                Debug.Log("Ok u lost");
-            }
-            else //If there is a target node around the player, the position of that node becomes the new position of the player
-            {
-                if (IsTailNode(targetNode)) //Compares the target node with the tail list
-                {
-                    Debug.Log("You ate your tail");
-                    print(playerNode.worldPosition + "playerPos");
-
-                    print(targetNode.worldPosition + "targetPos");
-                    onGameOver.Invoke();
-                }
-                else
-                {
-                    bool isScore = false;
-
-                    if (targetNode == appleNode)
-                    {
-                        isScore = true;
-                    }
-
-                    Node currentNode = playerNode; //Is storing storing the data of the palyerNode (x value, int value, and the worldposition)
-                    playerObj.transform.position = targetNode.worldPosition; //Makes the player position to the target position (the node you are moving towards)
-
-                    playerNode = targetNode;
-
-                    MoveTail();
-
-                    if (isScore)
-                    {
-                        tail.Insert(0, CreateTailNode(currentNode.x, currentNode.y)); //Adds a node to your tail
-                    }
-
-                    if (isScore)
-                    {
-                        currentScore++;
-                        if (currentScore >= PlayerPrefs.GetInt("Highscore", 0)) //Player prefs stores data on your computer, not safe for commercial games, but works in this case
-                        {
-                            highScore = currentScore;
-
-                            PlayerPrefs.SetInt("Highscore", highScore);
-                        }
-
-                        onScore.Invoke();
-
-                        if (isMoving)
-                        {
-                            RandomlyPlaceCollectible();
-                        }
-                        else
-                        {
-                            //you won!
-                        }
-                    }
-                }
-            }
-        }
         void MoveTail() //Moves the "tail"
         {
             //Todo: update here
@@ -534,19 +413,12 @@ namespace Grimm //In case someone else is writing scripts with i.e the same meth
         public void UpdateScore() //Updates the score
         {
             currentScoreText.text = currentScore.ToString(); //Sets the score text to the amount of points we scored
-            currentScorePause.text = currentScore.ToString();
 
-            highScorePause.text = PlayerPrefs.GetInt("Highscore", 0).ToString();
             highScoreText.text = PlayerPrefs.GetInt("Highscore", 0).ToString();
         }
         public void IsGameOver() //Game over function to call via Unity Events
         {
             isGameOver = true;
-        }
-        public void IsPaused() //Paused function to call via Unity Events
-        {
-            isPause = true;
-            isMoving = false; //Disables moving so we don't hit the wall when paused
         }
         bool IsOpposite(Direction d) //Sets the opposite direction 
         {
