@@ -1,21 +1,5 @@
 # AStar
-A* med lite snake 
-Om man kommenterar ut 
-MoveTail(); 
-och  
-if (isScore)
-                    {
-                        tail.Insert(0, CreateTailNode(oldPosNode.x, oldPosNode.y)); //Adds a node to your tail
-                    }
-i MoveAstar() så ser man bara spelaren röra på sig.
+A Snake game using A* Pathfinding
+I made this as a part of our AI course at Futuregames
 
-Om man kommenterar in     
-//if (isAStar)
-            //{
-            //    do
-            //    {
-            //        CreateWall();
-            //        count++;
-            //    } while (count < walls);
-            //}
-Så får man in lite obstacles i spelet (se till att sätta antalet till mer än 0 i editorn)
+This is the first time trying to utilize the algorithm in a game
